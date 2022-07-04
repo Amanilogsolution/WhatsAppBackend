@@ -7,6 +7,7 @@ const os = require('os')
 const { default: axios } = require("axios")
 const bodyParser = require('body-parser')
 const cors = require('cors')
+const Multer = require("./middleware/index")
 
 app.use(cors())
 app.use(bodyParser.urlencoded({extended:true}))
@@ -58,6 +59,39 @@ app.post('/sendmessage',async function (req,res){
         res.send("Message Send")
     }
     catch (err) {
+        console.log(err)
+    }
+})
+
+app.post('/sendimage',Multer,async function (req,res,next){
+    const image = req.files[0].buffer.toString('base64');
+    const message = req.body.message;
+    try{
+        axios.post(`http://192.168.146.19:3000/918800669286/sendMedia`,
+        {
+            "base64data": `${image}`,
+            "mimeType": "image/png",
+            "caption": `Text`,
+            "filename": "test.txt"
+        }).then(response=>response.data).catch(error => console.log(error))
+        res.send("Message Send")
+    }
+    catch (err) {
+        console.log(err)
+    }
+})
+
+app.post('/login',async function(req,res){
+    const userId = req.body.userId;
+    const userpassword = req.body.userpassword;
+    console.log(userId,userpassword)
+    try{
+        await sql.connect(sqlConfig)
+        const result = await sql.query(`SELECT * from AWLFINS.dbo.tbl_whatsapp_login WHERE  user_id='${userId}' and user_password='${userpassword}';`)
+       console.log(result.recordset[0])
+        res.status(200).send(result.recordset[0])
+    }
+    catch (err){
         console.log(err)
     }
 })
